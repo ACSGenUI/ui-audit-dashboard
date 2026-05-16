@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
-# Resolve HTML to encrypt, run pipeline, clean up temp files on exit.
+# Single workflow entrypoint: resolve HTML, encrypt, push to reports.
+# Scripts are cached before any `git checkout reports` (see pipeline-dir.sh).
 set -euo pipefail
 
 MODE="$1"
 BEFORE_SHA="${2:-}"
 MAIN_SHA="$3"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=pipeline-dir.sh
-source "$SCRIPT_DIR/pipeline-dir.sh"
-pipeline_init
+source "$REPO_SCRIPTS/pipeline-dir.sh"
+pipeline_bootstrap "$REPO_SCRIPTS"
+SCRIPTS="$(pipeline_scripts_dir)"
 
 if [ "$MODE" = "all" ]; then
-  bash "$SCRIPT_DIR/resolve-html-files.sh" all "$MAIN_SHA"
+  bash "$SCRIPTS/resolve-html-files.sh" all "$MAIN_SHA"
 else
-  bash "$SCRIPT_DIR/resolve-html-files.sh" delta "$BEFORE_SHA" "$MAIN_SHA"
+  bash "$SCRIPTS/resolve-html-files.sh" delta "$BEFORE_SHA" "$MAIN_SHA"
 fi
 
 CHANGED_HTML=$(pipeline_path changed-html.txt)
@@ -26,4 +28,4 @@ fi
 echo "HTML files to encrypt:"
 cat "$CHANGED_HTML"
 
-bash "$SCRIPT_DIR/run-encrypt-pipeline.sh" "$MAIN_SHA" "$CHANGED_HTML"
+bash "$SCRIPTS/run-encrypt-pipeline.sh" "$MAIN_SHA" "$CHANGED_HTML"

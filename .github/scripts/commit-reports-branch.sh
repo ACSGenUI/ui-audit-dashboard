@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=pipeline-dir.sh
-source "$SCRIPT_DIR/pipeline-dir.sh"
+source "$CALLER_DIR/pipeline-dir.sh"
+pipeline_init
 
 REPORT_DIRS=$(pipeline_path report-dirs.txt)
 

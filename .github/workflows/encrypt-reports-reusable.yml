@@ -33,6 +33,8 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      # Only run-encrypt-job.sh is invoked from workflows. It caches .github/scripts
+      # before `git checkout reports` removes that directory from the working tree.
       - name: Encrypt and push to reports branch
         run: |
           set -euo pipefail
