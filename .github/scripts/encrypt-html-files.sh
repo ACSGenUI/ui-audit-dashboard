@@ -22,12 +22,17 @@ while IFS= read -r FILE; do
 
   PARENT=$(dirname "$FILE")
   PASSWORD="@${PARENT}#"
-  echo "Encrypting $FILE"
+  # basename = immediate parent folder (e.g. Abbvie, lh-temp)
+  TEMPLATE_TITLE=$(basename "$PARENT")
+  echo "Encrypting $FILE (title: ${TEMPLATE_TITLE})"
 
   npx --yes staticrypt@3 "$FILE" \
     -p "$PASSWORD" \
     --short \
     -t password-template/template.html \
+    --template-title "$TEMPLATE_TITLE" \
+    --template-button "Show Report" \
+    --template-instructions "PRoGenAI Analysis Report" \
     -d "$PARENT" \
     -c .staticrypt.json
 done < "$FILE_LIST"
