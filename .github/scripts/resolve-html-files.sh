@@ -5,11 +5,11 @@
 #   resolve-html-files.sh delta <before_sha> <after_sha>
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=pipeline-dir.sh
-source "$SCRIPT_DIR/pipeline-dir.sh"
+source "$CALLER_DIR/pipeline-dir.sh"
+pipeline_init
 
-MODE="$1"
 CHANGED_HTML=$(pipeline_path changed-html.txt)
 CHANGED_PATHS=$(pipeline_path changed-paths.txt)
 REPORT_DIRS_FROM_CHANGES=$(pipeline_path report-dirs-from-changes.txt)
@@ -37,13 +37,13 @@ list_all_html() {
     > "$CHANGED_HTML" || true
 }
 
-case "$MODE" in
+case "${1:?mode}" in
   all)
-    list_all_html "$2"
+    list_all_html "${2:?main sha}"
     ;;
   delta)
-    BEFORE_SHA="$2"
-    AFTER_SHA="$3"
+    BEFORE_SHA="${2:?before sha}"
+    AFTER_SHA="${3:?after sha}"
     if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
       git diff-tree --no-commit-id --name-only -r "$AFTER_SHA" > "$CHANGED_PATHS"
     else
