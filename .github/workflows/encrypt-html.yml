@@ -30,35 +30,36 @@ jobs:
       - name: Install StatiCrypt
         run: npm install staticrypt@3
 
-      - name: Detect changed HTML files
+      - name: Detect changed HTML on main
         id: changes
         run: |
           set -euo pipefail
+          MAIN_SHA="${{ github.sha }}"
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             mapfile -t CHANGED < <(find . -type f -name '*.html' \
               ! -path './password-template/*' \
               ! -path './.git/*' | sed 's|^\./||' | sort)
           elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            mapfile -t CHANGED < <(git diff-tree --no-commit-id --name-only -r "${{ github.sha }}" -- '*.html' \
+            mapfile -t CHANGED < <(git diff-tree --no-commit-id --name-only -r "$MAIN_SHA" -- '*.html' \
               | grep -v '^password-template/' || true)
           else
             mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRT \
-              "${{ github.event.before }}" "${{ github.sha }}" -- '*.html' \
+              "${{ github.event.before }}" "$MAIN_SHA" -- '*.html' \
               | grep -v '^password-template/' || true)
           fi
 
           TO_ENCRYPT=()
           for file in "${CHANGED[@]}"; do
             [ -z "$file" ] && continue
-            [ ! -f "$file" ] && continue
+            git cat-file -e "$MAIN_SHA:$file" 2>/dev/null || continue
 
-            # Plaintext sources: *-old.html or non-StatiCrypt HTML
+            # Plaintext sources pushed to main: *-old.html or non-StatiCrypt HTML
             if [[ "$file" == *-old.html ]]; then
               TO_ENCRYPT+=("$file")
               continue
             fi
-            if ! grep -q 'staticrypt-html' "$file" 2>/dev/null; then
+            if ! git show "$MAIN_SHA:$file" | grep -q 'staticrypt-html'; then
               TO_ENCRYPT+=("$file")
             fi
           done
@@ -71,8 +72,38 @@ jobs:
 
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
           printf '%s\n' "${TO_ENCRYPT[@]}" > changed-html.txt
-          echo "Files to encrypt:"
+          echo "Plaintext files from main to encrypt on reports:"
           cat changed-html.txt
+
+      - name: Prepare reports branch and copy delta from main
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          set -euo pipefail
+          MAIN_SHA="${{ github.sha }}"
+
+          git fetch origin reports 2>/dev/null || true
+
+          if git show-ref --verify --quiet refs/remotes/origin/reports; then
+            echo "Checking out existing reports branch"
+            git checkout -B reports origin/reports
+          else
+            echo "Creating new reports branch"
+            git checkout --orphan reports
+            git rm -rf . 2>/dev/null || true
+          fi
+
+          # Copy only the delta plaintext files from the main push
+          while IFS= read -r SOURCE; do
+            [ -z "$SOURCE" ] && continue
+            mkdir -p "$(dirname "$SOURCE")"
+            git show "$MAIN_SHA:$SOURCE" > "$SOURCE"
+            echo "Copied from main: $SOURCE"
+          done < changed-html.txt
+
+          # Keep encryption assets available on reports
+          git show "$MAIN_SHA:.staticrypt.json" > .staticrypt.json 2>/dev/null || true
+          mkdir -p password-template
+          git show "$MAIN_SHA:password-template/template.html" > password-template/template.html 2>/dev/null || true
 
       - name: Encrypt changed HTML files
         if: steps.changes.outputs.has_changes == 'true'
@@ -105,18 +136,37 @@ jobs:
 
             mv "$PARENT/$(basename "$TMPFILE")" "$PARENT/$OUTPUT_NAME"
             rm -f "$TMPFILE"
+
+            # Reports branch stores encrypted output only (not *-old.html sources)
+            if [[ "$SOURCE" == *-old.html ]]; then
+              rm -f "$SOURCE"
+            elif [[ "$SOURCE" != "$PARENT/$OUTPUT_NAME" ]]; then
+              rm -f "$SOURCE"
+            fi
+
+            echo "$PARENT/$OUTPUT_NAME" >> encrypted-output.txt
           }
 
+          : > encrypted-output.txt
           while IFS= read -r FILE; do
             [ -z "$FILE" ] && continue
             encrypt_source "$FILE"
           done < changed-html.txt
 
-      - name: Commit encrypted files
+      - name: Commit and push to reports branch
         if: steps.changes.outputs.has_changes == 'true'
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet || git commit -m "chore: encrypt changed HTML files with StatiCrypt"
-          git push
+
+          while IFS= read -r OUT; do
+            [ -z "$OUT" ] && continue
+            git add "$OUT"
+          done < encrypted-output.txt
+
+          git diff --cached --quiet && echo "Nothing to commit" && exit 0
+
+          git commit -m "chore: encrypt dashboard HTML from main (${GITHUB_SHA::7})"
+          git push -u origin reports
