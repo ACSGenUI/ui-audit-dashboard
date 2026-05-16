@@ -3,26 +3,31 @@ set -euo pipefail
 
 FILE_LIST="$1"
 
-: > encrypted-output.txt
+if [ ! -s "$FILE_LIST" ]; then
+  echo "File list is empty; nothing to encrypt."
+  exit 1
+fi
+
+if [ ! -f .staticrypt.json ] || [ ! -f password-template/template.html ]; then
+  echo "Missing StatiCrypt config or template; run prepare-reports-branch.sh first."
+  exit 1
+fi
 
 while IFS= read -r FILE; do
   [ -z "$FILE" ] && continue
+  if [ ! -f "$FILE" ]; then
+    echo "HTML file not found: $FILE"
+    exit 1
+  fi
 
   PARENT=$(dirname "$FILE")
   PASSWORD="@${PARENT}#"
+  echo "Encrypting $FILE"
 
-  echo "Encrypting $FILE (password ${PASSWORD})"
-  TMPFILE=$(mktemp /tmp/staticrypt-XXXXXX.html)
-  cp "$FILE" "$TMPFILE"
-
-  npx staticrypt "$TMPFILE" \
+  npx --yes staticrypt@3 "$FILE" \
     -p "$PASSWORD" \
     --short \
     -t password-template/template.html \
     -d "$PARENT" \
     -c .staticrypt.json
-
-  mv "$PARENT/$(basename "$TMPFILE")" "$FILE"
-  rm -f "$TMPFILE"
-  echo "$FILE" >> encrypted-output.txt
 done < "$FILE_LIST"
