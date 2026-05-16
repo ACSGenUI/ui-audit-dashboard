@@ -20,7 +20,9 @@ git config user.email "github-actions[bot]@users.noreply.github.com"
 
 while IFS= read -r DIR; do
   [ -z "$DIR" ] && continue
-  git add -- "$DIR"
+  if [ -d "$DIR" ]; then
+    git add -A -- "$DIR"
+  fi
 done < "$REPORT_DIRS"
 
 git diff --cached --quiet && exit 0
