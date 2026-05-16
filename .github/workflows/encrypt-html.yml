@@ -1,4 +1,4 @@
-name: Encrypt HTML with StatiCrypt
+name: Encrypt HTML (delta)
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
     paths:
       - '**/*.html'
       - '!password-template/**'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -36,20 +35,16 @@ jobs:
           set -euo pipefail
           MAIN_SHA="${{ github.sha }}"
 
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            mapfile -t CHANGED < <(find . -type f -name '*.html' \
-              ! -path './password-template/*' \
-              ! -path './.git/*' | sed 's|^\./||' | sort)
-          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            mapfile -t CHANGED < <(git diff-tree --no-commit-id --name-only -r "$MAIN_SHA" -- '*.html' \
-              | grep -v '^password-template/' || true)
+          filter_html() {
+            grep '\.html$' | grep -v '^password-template/' | grep -v '^\.github/' || true
+          }
+
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            mapfile -t CHANGED < <(git diff-tree --no-commit-id --name-only -r "$MAIN_SHA" | filter_html)
           else
             mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRT \
-              "${{ github.event.before }}" "$MAIN_SHA" -- '*.html' \
-              | grep -v '^password-template/' || true)
+              "${{ github.event.before }}" "$MAIN_SHA" | filter_html)
           fi
-
-          CHANGED=($(printf '%s\n' "${CHANGED[@]}" | sed '/^$/d'))
 
           if [ "${#CHANGED[@]}" -eq 0 ]; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -60,71 +55,17 @@ jobs:
           printf '%s\n' "${CHANGED[@]}" > changed-html.txt
           cat changed-html.txt
 
-      - name: Prepare reports branch and copy delta from main
+      - name: Prepare reports branch and copy from main
         if: steps.changes.outputs.has_changes == 'true'
         run: |
           set -euo pipefail
           MAIN_SHA="${{ github.sha }}"
+          bash .github/scripts/prepare-reports-branch.sh "$MAIN_SHA" changed-html.txt
 
-          git fetch origin reports 2>/dev/null || true
-
-          if git show-ref --verify --quiet refs/remotes/origin/reports; then
-            git checkout -B reports origin/reports
-          else
-            git checkout --orphan reports
-            git rm -rf . 2>/dev/null || true
-          fi
-
-          while IFS= read -r FILE; do
-            [ -z "$FILE" ] && continue
-            mkdir -p "$(dirname "$FILE")"
-            git show "$MAIN_SHA:$FILE" > "$FILE"
-          done < changed-html.txt
-
-          git show "$MAIN_SHA:.staticrypt.json" > .staticrypt.json
-          mkdir -p password-template
-          git show "$MAIN_SHA:password-template/template.html" > password-template/template.html
-
-      - name: Encrypt changed HTML files
+      - name: Encrypt HTML files
         if: steps.changes.outputs.has_changes == 'true'
-        run: |
-          set -euo pipefail
-
-          : > encrypted-output.txt
-
-          while IFS= read -r FILE; do
-            [ -z "$FILE" ] && continue
-            PARENT=$(dirname "$FILE")
-            PASSWORD="@${PARENT}#"
-            TMPFILE=$(mktemp /tmp/staticrypt-XXXXXX.html)
-            cp "$FILE" "$TMPFILE"
-
-            npx staticrypt "$TMPFILE" \
-              -p "$PASSWORD" \
-              --short \
-              -t password-template/template.html \
-              -d "$PARENT" \
-              -c .staticrypt.json
-
-            mv "$PARENT/$(basename "$TMPFILE")" "$FILE"
-            rm -f "$TMPFILE"
-            echo "$FILE" >> encrypted-output.txt
-          done < changed-html.txt
+        run: bash .github/scripts/encrypt-html-files.sh changed-html.txt
 
       - name: Commit and push to reports branch
         if: steps.changes.outputs.has_changes == 'true'
-        run: |
-          set -euo pipefail
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          while IFS= read -r OUT; do
-            [ -z "$OUT" ] && continue
-            git add "$OUT"
-          done < encrypted-output.txt
-
-          git diff --cached --quiet && exit 0
-
-          git commit -m "chore: encrypt HTML from main (${GITHUB_SHA::7})"
-          git push -u origin reports
+        run: bash .github/scripts/commit-reports-branch.sh "chore: encrypt changed HTML from main"
