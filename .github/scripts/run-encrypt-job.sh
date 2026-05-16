@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Single workflow entrypoint: resolve HTML, encrypt, push to reports.
-# Scripts are cached before any `git checkout reports` (see pipeline-dir.sh).
 set -euo pipefail
 
 MODE="$1"
 BEFORE_SHA="${2:-}"
 MAIN_SHA="$3"
+
+export PIPELINE_MODE="$MODE"
 
 REPO_SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=pipeline-dir.sh
@@ -20,12 +21,19 @@ else
 fi
 
 CHANGED_HTML=$(pipeline_path changed-html.txt)
-if [ ! -s "$CHANGED_HTML" ]; then
-  echo "No HTML files to process."
+DELETED_PATHS=$(pipeline_path deleted-paths.txt)
+
+if [ "$MODE" = "all" ]; then
+  if [ ! -s "$CHANGED_HTML" ]; then
+    echo "No HTML files on main to encrypt."
+    exit 0
+  fi
+elif [ ! -s "$CHANGED_HTML" ] && [ ! -s "$DELETED_PATHS" ]; then
+  echo "No changes to apply on reports branch."
   exit 0
 fi
 
-echo "HTML files to encrypt:"
-cat "$CHANGED_HTML"
+[ -s "$CHANGED_HTML" ] && { echo "HTML files to encrypt:"; cat "$CHANGED_HTML"; }
+[ -s "$DELETED_PATHS" ] && { echo "Paths deleted on main:"; cat "$DELETED_PATHS"; }
 
 bash "$SCRIPTS/run-encrypt-pipeline.sh" "$MAIN_SHA" "$CHANGED_HTML"
