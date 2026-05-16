@@ -1,0 +1,122 @@
+name: Encrypt HTML with StatiCrypt
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.html'
+      - '!password-template/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  encrypt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install StatiCrypt
+        run: npm install staticrypt@3
+
+      - name: Detect changed HTML files
+        id: changes
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            mapfile -t CHANGED < <(find . -type f -name '*.html' \
+              ! -path './password-template/*' \
+              ! -path './.git/*' | sed 's|^\./||' | sort)
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            mapfile -t CHANGED < <(git diff-tree --no-commit-id --name-only -r "${{ github.sha }}" -- '*.html' \
+              | grep -v '^password-template/' || true)
+          else
+            mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRT \
+              "${{ github.event.before }}" "${{ github.sha }}" -- '*.html' \
+              | grep -v '^password-template/' || true)
+          fi
+
+          TO_ENCRYPT=()
+          for file in "${CHANGED[@]}"; do
+            [ -z "$file" ] && continue
+            [ ! -f "$file" ] && continue
+
+            # Plaintext sources: *-old.html or non-StatiCrypt HTML
+            if [[ "$file" == *-old.html ]]; then
+              TO_ENCRYPT+=("$file")
+              continue
+            fi
+            if ! grep -q 'staticrypt-html' "$file" 2>/dev/null; then
+              TO_ENCRYPT+=("$file")
+            fi
+          done
+
+          if [ "${#TO_ENCRYPT[@]}" -eq 0 ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No plaintext HTML files to encrypt in this push."
+            exit 0
+          fi
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "${TO_ENCRYPT[@]}" > changed-html.txt
+          echo "Files to encrypt:"
+          cat changed-html.txt
+
+      - name: Encrypt changed HTML files
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          set -euo pipefail
+
+          encrypt_source() {
+            local SOURCE="$1"
+            local PARENT
+            PARENT=$(dirname "$SOURCE")
+            local PASSWORD="@${PARENT}#"
+            local BASENAME
+            BASENAME=$(basename "$SOURCE" .html)
+            local OUTPUT_NAME="${BASENAME}.html"
+
+            if [[ "$SOURCE" == *-old.html ]]; then
+              OUTPUT_NAME="${BASENAME%-old}.html"
+            fi
+
+            echo "Encrypting $SOURCE -> $PARENT/$OUTPUT_NAME (password @${PARENT}#)"
+            TMPFILE=$(mktemp /tmp/staticrypt-XXXXXX.html)
+            cp "$SOURCE" "$TMPFILE"
+
+            npx staticrypt "$TMPFILE" \
+              -p "$PASSWORD" \
+              --short \
+              -t password-template/template.html \
+              -d "$PARENT" \
+              -c .staticrypt.json
+
+            mv "$PARENT/$(basename "$TMPFILE")" "$PARENT/$OUTPUT_NAME"
+            rm -f "$TMPFILE"
+          }
+
+          while IFS= read -r FILE; do
+            [ -z "$FILE" ] && continue
+            encrypt_source "$FILE"
+          done < changed-html.txt
+
+      - name: Commit encrypted files
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: encrypt changed HTML files with StatiCrypt"
+          git push
