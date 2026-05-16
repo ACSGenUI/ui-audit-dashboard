@@ -6,66 +6,17 @@ on:
       - main
     paths:
       - '**/*.html'
+      - '**/*.csv'
+      - '**/*.json'
       - '!password-template/**'
-
-permissions:
-  contents: write
+      - '!.github/**'
 
 jobs:
   encrypt:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install StatiCrypt
-        run: npm install staticrypt@3
-
-      - name: Detect changed HTML on main
-        id: changes
-        run: |
-          set -euo pipefail
-          MAIN_SHA="${{ github.sha }}"
-
-          filter_html() {
-            grep '\.html$' | grep -v '^password-template/' | grep -v '^\.github/' || true
-          }
-
-          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            mapfile -t CHANGED < <(git diff-tree --no-commit-id --name-only -r "$MAIN_SHA" | filter_html)
-          else
-            mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRT \
-              "${{ github.event.before }}" "$MAIN_SHA" | filter_html)
-          fi
-
-          if [ "${#CHANGED[@]}" -eq 0 ]; then
-            echo "has_changes=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "has_changes=true" >> "$GITHUB_OUTPUT"
-          printf '%s\n' "${CHANGED[@]}" > changed-html.txt
-          cat changed-html.txt
-
-      - name: Prepare reports branch and copy from main
-        if: steps.changes.outputs.has_changes == 'true'
-        run: |
-          set -euo pipefail
-          MAIN_SHA="${{ github.sha }}"
-          bash .github/scripts/prepare-reports-branch.sh "$MAIN_SHA" changed-html.txt
-
-      - name: Encrypt HTML files
-        if: steps.changes.outputs.has_changes == 'true'
-        run: bash .github/scripts/encrypt-html-files.sh changed-html.txt
-
-      - name: Commit and push to reports branch
-        if: steps.changes.outputs.has_changes == 'true'
-        run: bash .github/scripts/commit-reports-branch.sh "chore: encrypt changed HTML from main"
+    permissions:
+      contents: write
+    uses: ./.github/workflows/encrypt-reports-reusable.yml
+    with:
+      mode: delta
+      commit_msg: 'chore: encrypt changed HTML from main'
+      before_sha: ${{ github.event.before }}

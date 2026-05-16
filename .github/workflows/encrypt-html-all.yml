@@ -3,43 +3,11 @@ name: Encrypt HTML (all)
 on:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   encrypt-all:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install StatiCrypt
-        run: npm install staticrypt@3
-
-      - name: List all HTML files on main
-        run: |
-          set -euo pipefail
-          bash .github/scripts/list-html-files.sh > changed-html.txt
-          echo "Encrypting all HTML files:"
-          cat changed-html.txt
-
-      - name: Prepare reports branch and copy from main
-        run: |
-          set -euo pipefail
-          MAIN_SHA=$(git rev-parse HEAD)
-          bash .github/scripts/prepare-reports-branch.sh "$MAIN_SHA" changed-html.txt
-
-      - name: Encrypt HTML files
-        run: bash .github/scripts/encrypt-html-files.sh changed-html.txt
-
-      - name: Commit and push to reports branch
-        run: bash .github/scripts/commit-reports-branch.sh "chore: encrypt all HTML from main"
+    permissions:
+      contents: write
+    uses: ./.github/workflows/encrypt-reports-reusable.yml
+    with:
+      mode: all
+      commit_msg: 'chore: encrypt all HTML from main'

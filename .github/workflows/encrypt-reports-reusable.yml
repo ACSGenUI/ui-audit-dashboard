@@ -1,0 +1,43 @@
+name: Encrypt reports (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      mode:
+        description: 'all or delta'
+        required: true
+        type: string
+      commit_msg:
+        description: 'Git commit message prefix'
+        required: true
+        type: string
+      before_sha:
+        description: 'Previous commit SHA (delta only)'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  encrypt:
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_MSG: ${{ inputs.commit_msg }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Encrypt and push to reports branch
+        run: |
+          set -euo pipefail
+          MAIN_SHA=$(git rev-parse HEAD)
+          bash .github/scripts/run-encrypt-job.sh \
+            "${{ inputs.mode }}" \
+            "${{ inputs.before_sha }}" \
+            "$MAIN_SHA"
