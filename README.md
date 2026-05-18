@@ -99,7 +99,6 @@ Share the URL and password only with people who should access that report.
 - [ ] Changes target **`main`** only (plaintext).
 - [ ] Client folder contains `dashboard.html` (or `report.html`) plus required data files.
 - [ ] After merge, **Encrypt HTML** workflow succeeded on Actions.
-- [ ] GitHub Pages preview loads and decrypts with `@<parent-directory>#`.
 
 ---
 
