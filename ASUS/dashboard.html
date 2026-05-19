@@ -423,6 +423,20 @@
       text-align: center;
     }
 
+    .ai-disclaimer {
+      margin: 40px 0 0;
+      padding: 0;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      color: var(--muted);
+      opacity: 0.72;
+    }
+
+    .ai-disclaimer strong {
+      font-weight: 500;
+      color: inherit;
+    }
+
     @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
@@ -534,6 +548,10 @@
         </div>
       </section>
     </div>
+    <p class="ai-disclaimer" role="note" aria-label="AI-generated report disclaimer">
+      <strong>AI-generated report.</strong>
+      This analysis is produced by an AI-driven pipeline. While we strive for accuracy, results may occasionally be incomplete or imperfect — review findings before acting on them.
+    </p>
   </main>
 
   <script>
