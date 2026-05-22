@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AEM DXP (Telekom) — UI Audit Report</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#1e293b;padding:24px}
+.card{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(15,23,42,.08);max-width:900px;margin:0 auto;padding:28px 32px}
+h1{font-size:1.45rem;font-weight:700;margin-bottom:4px}
+.sub{font-size:.83rem;color:#64748b;margin-bottom:18px}
+.badges{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
+.badge{padding:6px 14px;border-radius:999px;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.amber{background:#fffbeb;color:#b45309}
+.red{background:#fef2f2;color:#b91c1c}
+.grey{background:#f1f5f9;color:#475569}
+h2{font-size:.95rem;font-weight:700;margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;text-transform:uppercase;letter-spacing:.06em;color:#475569}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px}
+.stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px}
+.stat-val{font-size:1.5rem;font-weight:700;line-height:1.1}
+.stat-label{font-size:.68rem;color:#64748b;margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.score-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f1f5f9}
+.score-row:last-child{border-bottom:none}
+.score-name{flex:1;font-size:.875rem;font-weight:600}
+.score-val{font-size:.875rem;font-weight:700;min-width:40px;text-align:right}
+.bar-wrap{flex:0 0 180px;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.bar{height:100%;border-radius:4px;transition:width .6s ease}
+.risk-pill{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:8px;text-transform:uppercase;letter-spacing:.03em;vertical-align:middle}
+.risk-high{background:#fef2f2;color:#b91c1c}
+.risk-medium{background:#fff7ed;color:#c2410c}
+.risk-low{background:#ecfdf5;color:#047857}
+table{width:100%;border-collapse:collapse;font-size:.81rem}
+th{text-align:left;padding:8px 10px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+td{padding:9px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top;line-height:1.45;color:#334155}
+tr:last-child td{border-bottom:none}
+.sev{padding:2px 8px;border-radius:999px;font-size:.63rem;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.sev-critical{background:#fef2f2;color:#b91c1c}
+.sev-high{background:#fff7ed;color:#c2410c}
+.sev-medium{background:#fefce8;color:#a16207}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:.81rem;color:#64748b;margin-bottom:20px}
+.meta-kv{display:flex;gap:.4em;align-items:baseline}
+.meta-kv b{color:#1e293b;font-weight:600;flex-shrink:0}
+.footer{margin-top:24px;padding-top:16px;border-top:1px solid #f1f5f9;font-size:.72rem;color:#94a3b8;text-align:center}
+.section-note{font-size:.78rem;color:#94a3b8;margin-bottom:10px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>AEM DXP (Telekom) — UI Audit Report</h1>
+  <div class="sub">Generated: 2026-05-22 &nbsp;·&nbsp; Auditor: ACS Amplify &nbsp;·&nbsp; Version: 2.0.0 &nbsp;·&nbsp; Phase: Development &nbsp;·&nbsp; Type: Enhancement</div>
+
+  <div class="meta-grid">
+    <div class="meta-kv"><b>Repo:</b> gitlab.devops.telekom.de/digitalhub-com-and-brand/aem-dxp</div>
+    <div class="meta-kv"><b>App URL:</b> author-p167603-e1796403.adobeaemcloud.com</div>
+    <div class="meta-kv"><b>Current phase:</b> Development</div>
+    <div class="meta-kv"><b>Project type:</b> Enhancement</div>
+  </div>
+
+  <div class="badges">
+    <span class="badge amber">🟡 RAG: AMBER</span>
+    <span class="badge red">⛔ Go-Live: NOT READY</span>
+    <span class="badge grey">Overall Score: 65 / 100</span>
+  </div>
+
+  <!-- CHECKLIST SUMMARY -->
+  <h2>Checklist Summary (254 Total)</h2>
+  <div class="grid">
+    <div class="stat"><div class="stat-val">254</div><div class="stat-label">Total Checks</div></div>
+    <div class="stat"><div class="stat-val" style="color:#047857">134</div><div class="stat-label">Passed</div></div>
+    <div class="stat"><div class="stat-val" style="color:#b91c1c">56</div><div class="stat-label">Failed</div></div>
+    <div class="stat"><div class="stat-val" style="color:#64748b">64</div><div class="stat-label">N/A</div></div>
+  </div>
+  <div class="grid">
+    <div class="stat"><div class="stat-val" style="color:#b91c1c">13</div><div class="stat-label">Critical Failed</div></div>
+    <div class="stat"><div class="stat-val" style="color:#c2410c">27</div><div class="stat-label">High Failed</div></div>
+    <div class="stat"><div class="stat-val" style="color:#a16207">16</div><div class="stat-label">Medium Failed</div></div>
+    <div class="stat"><div class="stat-val" style="color:#b91c1c">47</div><div class="stat-label">Mandatory Failed</div></div>
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <div class="stat"><div class="stat-val">71.2%</div><div class="stat-label">Mandatory Pass Rate</div></div>
+    <div class="stat"><div class="stat-val">72.9%</div><div class="stat-label">Critical Pass Rate</div></div>
+    <div class="stat"><div class="stat-val">70.7%</div><div class="stat-label">High Pass Rate</div></div>
+    <div class="stat"><div class="stat-val" style="color:#b91c1c">47</div><div class="stat-label">Blocking Issues</div></div>
+  </div>
+
+  <!-- DOMAIN SCORES -->
+  <h2>Domain Scores</h2>
+  <div id="scores-container"></div>
+
+  <!-- AUDIT BREAKDOWN -->
+  <h2>Audit Source Breakdown</h2>
+  <div class="grid">
+    <div class="stat"><div class="stat-val">143</div><div class="stat-label">Code Audit Total</div></div>
+    <div class="stat"><div class="stat-val" style="color:#047857">117</div><div class="stat-label">Code Passed</div></div>
+    <div class="stat"><div class="stat-val" style="color:#b91c1c">26</div><div class="stat-label">Code Failed</div></div>
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <div class="stat"><div class="stat-val">47</div><div class="stat-label">Browser Audit Total</div></div>
+    <div class="stat"><div class="stat-val" style="color:#047857">17</div><div class="stat-label">Browser Passed</div></div>
+    <div class="stat"><div class="stat-val" style="color:#b91c1c">30</div><div class="stat-label">Browser Failed</div></div>
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <div class="stat"><div class="stat-val">64</div><div class="stat-label">Manual Audit Total</div></div>
+    <div class="stat"><div class="stat-val" style="color:#64748b">64</div><div class="stat-label">Manual N/A</div></div>
+    <div class="stat"><div class="stat-val" style="color:#64748b">—</div><div class="stat-label">Manual (Pending)</div></div>
+  </div>
+
+  <!-- TOP ISSUES -->
+  <h2>Top Issues</h2>
+  <p class="section-note">Showing top critical and high severity failures from the code audit.</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:90px">Severity</th>
+        <th style="width:120px">Category</th>
+        <th>Description</th>
+        <th style="width:180px">Evidence / Location</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>Security</td>
+        <td>Known vulnerable npm dependencies present</td>
+        <td>package.json</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>Security</td>
+        <td>No Content-Security-Policy header configured</td>
+        <td>dispatcher/src/conf.d/, config/cdn.yaml</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>Security</td>
+        <td>Inline scripts without nonce/hash — CSP compliance blocked</td>
+        <td>HTML templates</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>JavaScript</td>
+        <td>Global variables in JS (189 instances found)</td>
+        <td>tabs.js:189</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>JavaScript</td>
+        <td>Inconsistent / missing error handling strategy</td>
+        <td>feed.js, shares-overview</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>Accessibility</td>
+        <td>Lighthouse accessibility score unverified (auth-gated author env)</td>
+        <td>author-p167603 env</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>Performance</td>
+        <td>Lighthouse performance score unverified (auth-gated author env)</td>
+        <td>author-p167603 env</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-critical">Critical</span></td>
+        <td>Performance</td>
+        <td>LCP / CLS / INP Core Web Vitals not measurable on author</td>
+        <td>author-p167603 env</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-high">High</span></td>
+        <td>CSS</td>
+        <td>Hardcoded hex/RGB colour values instead of design tokens</td>
+        <td>article-stage.scss, teaser.scss</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-high">High</span></td>
+        <td>CSS</td>
+        <td>CSS variables not used for spacing/typography scale</td>
+        <td>_tokens.scss, component SCSS files</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-high">High</span></td>
+        <td>CSS</td>
+        <td>Modern layout (Grid/Flexbox) not consistently used</td>
+        <td>Multiple component SCSS files</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-high">High</span></td>
+        <td>HTML</td>
+        <td>Semantic-to-div ratio: too many generic &lt;div&gt;/&lt;span&gt; containers</td>
+        <td>HBS/HTL templates</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-high">High</span></td>
+        <td>HTML</td>
+        <td>Heading hierarchy issues across page templates</td>
+        <td>article-stage.hbs, ai-summary.hbs</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-high">High</span></td>
+        <td>Accessibility</td>
+        <td>Visible focus styles missing or inconsistent</td>
+        <td>Component CSS files</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-high">High</span></td>
+        <td>Accessibility</td>
+        <td>Hover rules without focus equivalent</td>
+        <td>teaser.scss, feed.scss</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-medium">Medium</span></td>
+        <td>JavaScript</td>
+        <td>Timer/interval leaks — no cleanup on disconnect (124 found)</td>
+        <td>feed.js, tabs.js</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-medium">Medium</span></td>
+        <td>JavaScript</td>
+        <td>Event listeners not cleaned up on component destroy</td>
+        <td>Multiple JS files</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-medium">Medium</span></td>
+        <td>JavaScript</td>
+        <td>State mutation via direct property assignment (no setters)</td>
+        <td>Multiple JS files</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-medium">Medium</span></td>
+        <td>Code Quality</td>
+        <td>Oversized files/functions — 1755 instances flagged</td>
+        <td>Multiple components</td>
+      </tr>
+      <tr>
+        <td><span class="sev sev-medium">Medium</span></td>
+        <td>HTML Forms</td>
+        <td>Error messages not programmatically linked to inputs</td>
+        <td>Form components</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- RECOMMENDATIONS -->
+  <h2>Key Recommendations</h2>
+  <table>
+    <thead><tr><th style="width:110px">Priority</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sev sev-critical">P1 — Critical</span></td><td>Audit and remediate npm dependency vulnerabilities (<code>npm audit fix</code>)</td></tr>
+      <tr><td><span class="sev sev-critical">P1 — Critical</span></td><td>Implement CSP headers via dispatcher or CDN config; add nonce/hash for inline scripts</td></tr>
+      <tr><td><span class="sev sev-critical">P1 — Critical</span></td><td>Eliminate JS global variables; scope all state to component modules</td></tr>
+      <tr><td><span class="sev sev-critical">P1 — Critical</span></td><td>Re-run browser audit against publish/staging environment (not author) for accurate Lighthouse scores</td></tr>
+      <tr><td><span class="sev sev-high">P2 — High</span></td><td>Migrate hardcoded colours and spacing to CSS design tokens in <code>_tokens.scss</code></td></tr>
+      <tr><td><span class="sev sev-high">P2 — High</span></td><td>Add visible focus styles to all interactive elements; mirror hover rules with :focus-visible</td></tr>
+      <tr><td><span class="sev sev-high">P2 — High</span></td><td>Fix heading hierarchy across article-stage, teaser, ai-summary templates</td></tr>
+      <tr><td><span class="sev sev-medium">P3 — Medium</span></td><td>Add cleanup logic (clearInterval / removeEventListener) to all JS component disconnect callbacks</td></tr>
+      <tr><td><span class="sev sev-medium">P3 — Medium</span></td><td>Complete manual audit checklist (64 items currently N/A) before go-live decision</td></tr>
+    </tbody>
+  </table>
+
+  <p class="footer">NOTE: This is an AI-assisted audit. While results strive for accuracy, always validate critical findings manually before go-live. &nbsp;|&nbsp; ACS Amplify UI Audit v2.0.0</p>
+</div>
+
+<script>
+const scores = [
+  {name:"Development",val:76.1,risk:"Medium",rc:"risk-medium"},
+  {name:"Accessibility",val:72.7,risk:"Medium",rc:"risk-medium"},
+  {name:"Process Governance",val:66.7,risk:"Medium",rc:"risk-medium"},
+  {name:"Security",val:56.5,risk:"High",rc:"risk-high"},
+  {name:"Performance",val:54.2,risk:"High",rc:"risk-high"},
+];
+function col(v){return v>=90?"#10b981":v>=65?"#f59e0b":"#ef4444";}
+const c=document.getElementById("scores-container");
+scores.forEach(s=>{
+  const clr=col(s.val);
+  const div=document.createElement("div");
+  div.className="score-row";
+  div.innerHTML=`<span class="score-name">${s.name}<span class="risk-pill ${s.rc}">${s.risk} risk</span></span>`
+    +`<div class="bar-wrap"><div class="bar" style="width:0%;background:${clr}" data-w="${s.val}"></div></div>`
+    +`<span class="score-val" style="color:${clr}">${s.val}</span>`;
+  c.appendChild(div);
+});
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  document.querySelectorAll(".bar[data-w]").forEach(b=>{b.style.width=b.dataset.w+"%";});
+}));
+</script>
+</body>
+</html>
