@@ -2,8 +2,8 @@ key,value
 metadata.projectName,Centerparcs
 metadata.repoUrl,https://github.com/CenterParcsUK-AEM/uxp.git
 metadata.appUrl,https://www.centerparcs.co.uk/
-metadata.auditDate,2026-09-22
-metadata.auditorName,Mohamed Khalid
+metadata.auditDate,2026-06-03
+metadata.auditorName,Abhishek
 metadata.auditVersion,2.0.0
 metadata.projectType,Existing Project with new features
 metadata.projectManager,Tanu
