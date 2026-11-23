@@ -1,0 +1,29 @@
+key,value
+metadata.projectName,TCCC Gating App
+metadata.repoUrl,https://github.com/adbprojectssam/tccc-gating-app
+metadata.auditDate,2026-11-23
+metadata.branch,stage
+metadata.revision,666f572221990fcac9092bfd5920486d8d77ec45
+metadata.scope,Source-code audit only
+summary.codeAudit.total,143
+summary.codeAudit.passed,41
+summary.codeAudit.failed,41
+summary.codeAudit.unassessed,51
+summary.codeAudit.notApplicable,10
+summary.codeAudit.assessed,82
+summary.codeAudit.assessedPassRate,50.0
+summary.codeAudit.mandatoryFailed,36
+summary.codeAudit.criticalFailed,8
+summary.browserAudit.status,Unassessed
+summary.manualAudit.status,Unassessed
+scores.codeAssessedPassRate,50.0
+validation.lint,Passed
+validation.testSuites.passed,25
+validation.testSuites.blocked,13
+validation.tests.passed,625
+dependencies.info,0
+dependencies.low,17
+dependencies.moderate,25
+dependencies.high,34
+dependencies.critical,1
+dependencies.total,77
